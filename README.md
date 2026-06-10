@@ -53,8 +53,7 @@ $ todo
 ## Uninstallation
 
 ```bash
-sudo make uninstall    # removes the program
-rm -rf ~/.local/state/todo  # removes all tasks (optional)
+make uninstall    # removes the program and task list
 ```
 
 ## Requirements
