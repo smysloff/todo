@@ -1,7 +1,12 @@
 
 # file: Makefile
 
-SOURCES := src/main.c src/list.c src/util.c
+SOURCES := \
+					 src/list.c \
+					 src/main.c \
+					 src/util.c \
+					 src/wrappers.c
+
 CFLAGS := -Wall -Werror -Wextra -Os -std=c2x
 
 all: build
