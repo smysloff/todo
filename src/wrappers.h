@@ -20,4 +20,4 @@ FILE *Fopen(const char *path, const char *mode);
 void Fputc(int c, FILE *stream);
 void Fputs(const char *s, FILE *stream);
 void Fprintf(FILE *stream, const char *format, ...);
-//char *fgets(char *s, int size, FILE *restrict stream);
+char *Fgets(char *s, int size, FILE *stream);

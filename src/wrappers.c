@@ -67,3 +67,14 @@ void Fprintf(FILE *restrict stream, const char *restrict format, ...)
     die("fprintf()");
   va_end(ap);
 }
+
+char *
+Fgets(char *s, int size, FILE *restrict stream)
+{
+  if (!fgets(s, size, stream)) {
+    if (ferror(stream))
+      die("fgets()");
+    return NULL;
+  }
+  return s;
+}

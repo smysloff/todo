@@ -87,8 +87,8 @@ display(void)
   if (!(stream = fopen(get_state_file(), "r")))
     return;
 
-  for (size_t i = 1; fgets(buf, sizeof(buf) - 1, stream); ++i)
-    fprintf(stdout, "%zu) %s", i, buf);
+  for (size_t i = 1; Fgets(buf, sizeof(buf) - 1, stream); ++i)
+    Fprintf(stdout, "%zu) %s", i, buf);
 
   Fclose(stream);
 }
@@ -142,11 +142,11 @@ cmd_del(const char *value)
 
   stream = Fopen(get_state_file(), "r+");
 
-  n = strtoll(value, &endptr, 10);
+  n = strtoll(value, &endptr, 10); // @todo Strtoll
   if (*endptr != '\0' || n <= 0 || n > INT_MAX)
     die("strtoll()");
 
-  for (size_t i = 1; fgets(buf, sizeof(buf) - 1, stream); ++i) {
+  for (size_t i = 1; Fgets(buf, sizeof(buf) - 1, stream); ++i) {
 
     if (i == (size_t) n)
       continue;
