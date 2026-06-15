@@ -142,9 +142,9 @@ cmd_del(const char *value)
 
   stream = Fopen(get_state_file(), "r+");
 
-  n = strtoll(value, &endptr, 10); // @todo Strtoll
-  if (*endptr != '\0' || n <= 0 || n > INT_MAX)
-    die("strtoll()");
+  n = Strtoll(value, &endptr, 10);
+  if (n <= 0 || n > INT_MAX)
+    die("Strtoll()");
 
   for (size_t i = 1; Fgets(buf, sizeof(buf) - 1, stream); ++i) {
 

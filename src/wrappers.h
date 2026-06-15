@@ -21,3 +21,4 @@ void Fputc(int c, FILE *stream);
 void Fputs(const char *s, FILE *stream);
 void Fprintf(FILE *stream, const char *format, ...);
 char *Fgets(char *s, int size, FILE *stream);
+long long Strtoll(const char *nptr, char **endptr, int base);

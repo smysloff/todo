@@ -78,3 +78,20 @@ Fgets(char *s, int size, FILE *restrict stream)
   }
   return s;
 }
+
+long long
+Strtoll(const char *restrict nptr, char **restrict endptr, int base)
+{
+  long long res;
+
+  errno = 0;
+  res = strtoll(nptr, endptr, base);
+
+  if (endptr && *endptr == nptr)
+    die("strtoll(): no digits found");
+
+  if (errno == ERANGE)
+    die("strtoll(): out of range");
+
+  return res;
+}
