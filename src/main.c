@@ -22,13 +22,14 @@
 const char *get_state_dir(void);
 const char *get_state_file(void);
 
-void usage(const char *app);
-void display(void);
 void process(const char *app, const char *cmd, const char *val1, const char *val2);
+void cmd_usage(const char *app);
+void cmd_show(void);
 void cmd_new(void);
 void cmd_add(const char *value);
 void cmd_del(const char *value);
 void cmd_mov(const char *val1, const char *val2);
+void cmd_swap(const char *val1, const char *val2);
 
 
 int
@@ -36,19 +37,24 @@ main(int argc, char *argv[])
 {
   switch (argc) {
 
-    case 1: display();
+    case 1:
+      process(argv[0], "show", NULL, NULL);
       break;
 
-    case 2: process(argv[0], argv[1], NULL, NULL);
+    case 2:
+      process(argv[0], argv[1], NULL, NULL);
       break;
 
-    case 3: process(argv[0], argv[1], argv[2], NULL);
+    case 3:
+      process(argv[0], argv[1], argv[2], NULL);
       break;
 
-    case 4: process(argv[0], argv[1], argv[2], argv[3]);
+    case 4:
+      process(argv[0], argv[1], argv[2], argv[3]);
       break;
 
-    default: usage(argv[0]);
+    default:
+      process(argv[0], "help", NULL, NULL);
   }
 
   return EXIT_SUCCESS;
@@ -70,21 +76,48 @@ const char *get_state_file(void)
   return state_file;
 }
 
-
 void
-usage(const char *app)
+process(const char *app, const char *cmd, const char *val1, const char *val2)
 {
-  Fprintf(stdout, "usage:\n");
-  Fprintf(stdout, "%s - show list if it exists\n", app);
-  Fprintf(stdout, "%s new - create a new list\n", app);
-  Fprintf(stdout, "%s add <value> - add a new item\n", app);
-  Fprintf(stdout, "%s del <index> - delete an item by its index\n", app);
-  Fprintf(stdout, "%s mov <from> <to> - move item from index to index\n", app);
-  Fprintf(stdout, "%s help - show this message\n", app);
+  if ((!strcmp(cmd, "help") || !strcmp(cmd, "--help")) && !val1 && !val2)
+    return cmd_usage(app);
+
+  if (!strcmp(cmd, "show") && !val1 && !val2)
+    return cmd_show();
+
+  if (!strcmp(cmd, "new") && !val1 && !val2)
+    return cmd_new();
+
+  if (!strcmp(cmd, "add") && val1 && !val2)
+    return cmd_add(val1);
+
+  if ((!strcmp(cmd, "del") || !strcmp(cmd, "delete")) && val1 && !val2)
+    return cmd_del(val1);
+
+  if ((!strcmp(cmd, "mov") || !strcmp(cmd, "move")) && val1 && val2)
+    return cmd_mov(val1, val2);
+
+  if (!strcmp(cmd, "swap") && val1 && val2)
+    return cmd_swap(val1, val2);
+
+  cmd_usage(app);
 }
 
 void
-display(void)
+cmd_usage(const char *app)
+{
+  Fprintf(stdout, "Usage: %s <command> [arg1 [arg2]]\n", app);
+  Fprintf(stdout, "<show> - show list if it exists\n");
+  Fprintf(stdout, "<new> - create a new list\n");
+  Fprintf(stdout, "<add> <value> - add a new item\n");
+  Fprintf(stdout, "<del> <index> - delete an item by its index\n");
+  Fprintf(stdout, "<mov> <index> <index> - move item from index to index\n");
+  Fprintf(stdout, "<swap> <index> <index> - swap two items\n");
+  Fprintf(stdout, "<help> - show this message\n");
+}
+
+void
+cmd_show(void)
 {
   FILE *stream;
   char buf[BUF_SIZE];
@@ -99,30 +132,6 @@ display(void)
 }
 
 void
-process(const char *app, const char *cmd, const char *val1, const char *val2)
-{
-  if (!strcmp(cmd, "help") && !val1 && !val2)
-    return usage(app);
-
-  if (!strcmp(cmd, "--help") && !val1 && !val2)
-    return usage(app);
-
-  if (!strcmp(cmd, "new") && !val1 && !val2)
-    return cmd_new();
-
-  if (!strcmp(cmd, "add") && val1 && !val2)
-    return cmd_add(val1);
-
-  if (!strcmp(cmd, "del") && val1 && !val2)
-    return cmd_del(val1);
-
-  if (!strcmp(cmd, "mov") && val1 && val2)
-    return cmd_mov(val1, val2);
-
-  usage(app);
-}
-
-void
 cmd_new(void)
 {
   Fclose(
@@ -133,10 +142,10 @@ void
 cmd_add(const char *value)
 {
   FILE *stream = Fopen(get_state_file(), "a");
-  Fputs(value, stream); // @todo remove all '\n'
+  Fputs(value, stream);
   Fputc('\n', stream);
   Fclose(stream);
-  display();
+  cmd_show();
 }
 
 void
@@ -174,7 +183,6 @@ cmd_del(const char *value)
 
   stream = Fopen(get_state_file(), "w");
 
-  // @todo list_print_and_free()
   while (list) {
     Fputs(list->value, stream);
     node = list;
@@ -187,7 +195,7 @@ cmd_del(const char *value)
 
   // display list
 
-  display();
+  cmd_show();
 }
 
 void
@@ -218,7 +226,7 @@ cmd_mov(const char *val1, const char *val2)
 
     if (i == from) {
       if (!(movable = node_alloc(buf)))
-        die("list_push()");
+        die("node_alloc()");
     }
 
     else if (!list_push(&list, buf))
@@ -262,5 +270,60 @@ cmd_mov(const char *val1, const char *val2)
 
   // display list
 
-  display();
+  cmd_show();
+}
+
+void
+cmd_swap(const char *val1, const char *val2)
+{
+  FILE *stream;
+  char *endptr;
+  list_t list = NULL;
+  node_t *node = NULL;
+  long long n1, n2;
+  node_t *node1, *node2;
+  char buf[BUF_SIZE];
+
+  n1 = Strtoll(val1, &endptr, 10);
+  if (n1 <= 0 || n1 > INT_MAX)
+    return cmd_show();
+
+  n2 = Strtoll(val2, &endptr, 10);
+  if (n2 <= 0 || n2 > INT_MAX)
+    return cmd_show();
+
+  if (n1 == n2)
+    return cmd_show();
+
+  stream = Fopen(get_state_file(), "r");
+  while (Fgets(buf, sizeof(buf) - 1, stream)) {
+    if (!list_push(&list, buf)) {
+      list_free(list);
+      return cmd_show();
+    }
+  }
+  Fclose(stream);
+
+  if (!(node1 = list_index(list, n1))) {
+    list_free(list);
+    return cmd_show();
+  }
+
+  if (!(node2 = list_index(list, n2))) {
+    list_free(list);
+    return cmd_show();
+  }
+
+  swap(node1->value, node2->value);
+
+  stream = Fopen(get_state_file(), "w");
+  while (list) {
+    Fputs(list->value, stream);
+    node = list;
+    list = list->next;
+    node_free(node);
+  }
+  Fclose(stream);
+
+  cmd_show();
 }

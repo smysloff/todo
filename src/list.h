@@ -19,3 +19,5 @@ void node_free(node_t *node);
 node_t *list_tail(list_t list);
 node_t *list_push(list_t *list, const char *value);
 void list_free(list_t list);
+void list_foreach(list_t list, void (cb)(node_t *node));
+node_t *list_index(list_t list, size_t index);

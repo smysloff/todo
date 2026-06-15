@@ -72,3 +72,17 @@ list_free(list_t list)
     node_free(node);
   }
 }
+
+void
+list_foreach(list_t list, void (cb)(node_t *node))
+{
+  for (; list; list = list->next)
+    cb(list);
+}
+
+node_t *
+list_index(list_t list, size_t index) {
+  for (size_t i = 1; list && i < index; ++i)
+    list = list->next;
+  return list;
+}
