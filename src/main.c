@@ -140,81 +140,6 @@ cmd_add(const char *value)
 }
 
 void
-cmd_mov(const char *val1, const char *val2)
-{
-  FILE *stream;
-  long long from, to, i;
-  char *endptr;
-  list_t list = NULL;
-  list_t movable = NULL;
-  node_t *node = NULL;
-  char buf[BUF_SIZE];
-
-
-  from = Strtoll(val1, &endptr, 10);
-  if (from <= 0 || from > INT_MAX)
-    die("Strtoll()");
-
-  to = Strtoll(val2, &endptr, 10);
-  if (to <= 0 || to > INT_MAX)
-    die("Strtoll()");
-
-
-  // read from the file
-
-  stream = Fopen(get_state_file(), "r");
-
-  for (i = 1; fgets(buf, sizeof(buf) - 1, stream); ++i) {
-
-    if (i == from) {
-      if (!(list_push(&movable, buf))) {
-        die("list_push()");
-      }
-    }
-
-    else if (!list_push(&list, buf)) {
-      die("list_push()");
-    }
-  }
-
-  Fclose(stream);
-
-
-  // write to the file
-
-  stream = Fopen(get_state_file(), "w");
-
-  for (i = 1; list; ++i) {
-
-    if (to == i) {
-      Fputs(movable->value, stream);
-      free(movable->value);
-      free(movable);
-    }
-
-    else {
-      Fputs(list->value, stream);
-      node = list;
-      list = list->next;
-      free(node->value);
-      free(node);
-    }
-
-  }
-
-  if (to >= i) {
-    Fputs(movable->value, stream);
-    free(movable->value);
-    free(movable);
-  }
-
-  Fclose(stream);
-
-
-  display();
-}
-
-void
 cmd_del(const char *value)
 {
   FILE *stream;
@@ -259,6 +184,87 @@ cmd_del(const char *value)
   }
 
   Fclose(stream);
+
+
+  // display list
+
+  display();
+}
+
+void
+cmd_mov(const char *val1, const char *val2)
+{
+  FILE *stream;
+  long long from, to, i;
+  char *endptr;
+  list_t list = NULL;
+  list_t movable = NULL;
+  node_t *node = NULL;
+  char buf[BUF_SIZE];
+
+
+  from = Strtoll(val1, &endptr, 10);
+  if (from <= 0 || from > INT_MAX)
+    die("Strtoll()");
+
+  to = Strtoll(val2, &endptr, 10);
+  if (to <= 0 || to > INT_MAX)
+    die("Strtoll()");
+
+
+  // read from the file
+
+  stream = Fopen(get_state_file(), "r");
+
+  for (i = 1; fgets(buf, sizeof(buf) - 1, stream); ++i) {
+
+    if (i == from) {
+      if (!(list_push(&movable, buf))) {
+        die("list_push()");
+      }
+    }
+
+    else if (!list_push(&list, buf)) {
+      die("list_push()");
+    }
+  }
+
+  Fclose(stream);
+
+
+  // write to the file
+
+  if (movable) {
+
+    stream = Fopen(get_state_file(), "w");
+
+    for (i = 1; list; ++i) {
+
+      if (to == i) {
+        Fputs(movable->value, stream);
+        free(movable->value);
+        free(movable);
+      }
+
+      else {
+        Fputs(list->value, stream);
+        node = list;
+        list = list->next;
+        free(node->value);
+        free(node);
+      }
+
+    }
+
+    if (to >= i) {
+      Fputs(movable->value, stream);
+      free(movable->value);
+      free(movable);
+    }
+
+    Fclose(stream);
+
+  }
 
 
   // display list
