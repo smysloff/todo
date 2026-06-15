@@ -133,7 +133,7 @@ void
 cmd_add(const char *value)
 {
   FILE *stream = Fopen(get_state_file(), "a");
-  Fputs(value, stream);
+  Fputs(value, stream); // @todo remove all '\n'
   Fputc('\n', stream);
   Fclose(stream);
   display();
@@ -160,8 +160,8 @@ cmd_del(const char *value)
 
   for (size_t i = 1; Fgets(buf, sizeof(buf) - 1, stream); ++i) {
 
-    if (i == (size_t) n)
-      continue;
+    if (i == (size_t) n) // deletion
+      continue;          // is not putting item in new list
 
     if (!list_push(&list, buf))
       die("list_push()");
@@ -179,8 +179,7 @@ cmd_del(const char *value)
     Fputs(list->value, stream);
     node = list;
     list = list->next;
-    free(node->value);
-    free(node);
+    node_free(node);
   }
 
   Fclose(stream);
@@ -198,8 +197,7 @@ cmd_mov(const char *val1, const char *val2)
   long long from, to, i;
   char *endptr;
   list_t list = NULL;
-  list_t movable = NULL;
-  node_t *node = NULL;
+  node_t *node, *movable = NULL;
   char buf[BUF_SIZE];
 
 
@@ -216,17 +214,15 @@ cmd_mov(const char *val1, const char *val2)
 
   stream = Fopen(get_state_file(), "r");
 
-  for (i = 1; fgets(buf, sizeof(buf) - 1, stream); ++i) {
+  for (i = 1; Fgets(buf, sizeof(buf) - 1, stream); ++i) {
 
     if (i == from) {
-      if (!(list_push(&movable, buf))) {
+      if (!(movable = node_alloc(buf)))
         die("list_push()");
-      }
     }
 
-    else if (!list_push(&list, buf)) {
+    else if (!list_push(&list, buf))
       die("list_push()");
-    }
   }
 
   Fclose(stream);
@@ -242,24 +238,21 @@ cmd_mov(const char *val1, const char *val2)
 
       if (to == i) {
         Fputs(movable->value, stream);
-        free(movable->value);
-        free(movable);
+        node_free(movable);
       }
 
       else {
         Fputs(list->value, stream);
         node = list;
         list = list->next;
-        free(node->value);
-        free(node);
+        node_free(node);
       }
 
     }
 
     if (to >= i) {
       Fputs(movable->value, stream);
-      free(movable->value);
-      free(movable);
+      node_free(movable);
     }
 
     Fclose(stream);
