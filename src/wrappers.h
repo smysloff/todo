@@ -12,13 +12,15 @@
 
 #include "util.h"
 
-char *Getenv(const char *name);
-void Snprintf(char *str, size_t size, const char *format, ...);
-void Mkdir(const char *path, mode_t mode);
-void Fclose(FILE *stream);
-FILE *Fopen(const char *path, const char *mode);
-void Fputc(int c, FILE *stream);
-void Fputs(const char *s, FILE *stream);
-void Fprintf(FILE *stream, const char *format, ...);
-char *Fgets(char *s, int size, FILE *stream);
-long long Strtoll(const char *nptr, char **endptr, int base);
+void *calloc_or_die(size_t n, size_t size);
+void fclose_or_die(FILE *stream);
+char *fgets_or_die(char *s, int size, FILE *stream);
+FILE *fopen_or_die(const char *path, const char *mode);
+void fprintf_or_die(FILE *stream, const char *format, ...);
+void fputc_or_die(int c, FILE *stream);
+void fputs_or_die(const char *s, FILE *stream);
+char *getenv_or_die(const char *name);
+void *malloc_or_die(size_t size);
+void mkdir_or_die(const char *path, mode_t mode);
+void *realloc_or_die(void *p, size_t size);
+void snprintf_or_die(char *str, size_t size, const char *format, ...);

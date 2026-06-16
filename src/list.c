@@ -9,15 +9,11 @@ node_alloc(const char *value)
   node_t *node;
   size_t size;
 
-  if (!(node = calloc(1, sizeof(*node))))
-    return NULL;
+  node = calloc_or_die(1, sizeof(*node));
 
   if (value) {
     size = strlen(value) + 1;
-    if (!(node->value = malloc(size))) {
-      free(node);
-      return NULL;
-    }
+    node->value = malloc_or_die(size);
     memcpy(node->value, value, size);
   }
 
@@ -49,8 +45,7 @@ list_push(list_t *list_p, const char *value)
   if (!list_p)
     return NULL;
 
-  if (!(node = node_alloc(value)))
-    return NULL;
+  node = node_alloc(value);
 
   if (*list_p) {
     tail = list_tail(*list_p);

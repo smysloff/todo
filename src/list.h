@@ -7,6 +7,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "wrappers.h"
+
 typedef struct node_s {
   struct node_s *next;
   char *value;

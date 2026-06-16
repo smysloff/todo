@@ -3,73 +3,24 @@
 
 #include "wrappers.h"
 
-char *
-Getenv(const char *name)
+void *
+calloc_or_die(size_t n, size_t size)
 {
-  char *s;
-  if (!(s = getenv(name)))
-    die("getenv()");
-  return s;
+  void *res;
+  if (!(res = calloc(n, size)))
+    die("calloc()");
+  return res;
 }
 
 void
-Snprintf(char *str, size_t size, const char *restrict format, ...)
-{
-  va_list ap;
-  va_start(ap, format);
-  if (vsnprintf(str, size, format, ap) < 0)
-    die("snprintf()");
-  va_end(ap);
-}
-
-void
-Mkdir(const char *path, mode_t mode)
-{
-  if (mkdir(path, mode) == -1 && errno != EEXIST)
-    die("mkdir()");
-}
-
-void
-Fclose(FILE *stream)
+fclose_or_die(FILE *stream)
 {
   if (fclose(stream) == EOF)
     die("fclose()");
 }
 
-FILE *
-Fopen(const char *restrict path, const char *restrict mode)
-{
-  FILE *stream;
-  if (!(stream = fopen(path, mode)))
-    die("fopen()");
-  return stream;
-}
-
-void
-Fputc(int c, FILE *stream)
-{
-  if (fputc(c, stream) == EOF)
-    die("fputc()");
-}
-
-void
-Fputs(const char *restrict s, FILE *restrict stream)
-{
-  if (fputs(s, stream) == EOF)
-    die("fputs()");
-}
-
-void Fprintf(FILE *restrict stream, const char *restrict format, ...)
-{
-  va_list ap;
-  va_start(ap, format);
-  if (vfprintf(stream, format, ap) < 0)
-    die("fprintf()");
-  va_end(ap);
-}
-
 char *
-Fgets(char *s, int size, FILE *restrict stream)
+fgets_or_die(char *s, int size, FILE *restrict stream)
 {
   if (!fgets(s, size, stream)) {
     if (ferror(stream))
@@ -79,19 +30,79 @@ Fgets(char *s, int size, FILE *restrict stream)
   return s;
 }
 
-long long
-Strtoll(const char *restrict nptr, char **restrict endptr, int base)
+FILE *
+fopen_or_die(const char *restrict path, const char *restrict mode)
 {
-  long long res;
+  FILE *stream;
+  if (!(stream = fopen(path, mode)))
+    die("fopen()");
+  return stream;
+}
 
-  errno = 0;
-  res = strtoll(nptr, endptr, base);
+void
+fprintf_or_die(FILE *restrict stream, const char *restrict format, ...)
+{
+  va_list ap;
+  va_start(ap, format);
+  if (vfprintf(stream, format, ap) < 0)
+    die("fprintf()");
+  va_end(ap);
+}
 
-  if (endptr && *endptr == nptr)
-    die("strtoll(): no digits found");
+void
+fputc_or_die(int c, FILE *stream)
+{
+  if (fputc(c, stream) == EOF)
+    die("fputc()");
+}
 
-  if (errno == ERANGE)
-    die("strtoll(): out of range");
+void
+fputs_or_die(const char *restrict s, FILE *restrict stream)
+{
+  if (fputs(s, stream) == EOF)
+    die("fputs()");
+}
 
+char *
+getenv_or_die(const char *name)
+{
+  char *s;
+  if (!(s = getenv(name)))
+    die("getenv()");
+  return s;
+}
+
+void *
+malloc_or_die(size_t size)
+{
+  void *res;
+  if (!(res = malloc(size)))
+    die("malloc()");
   return res;
+}
+
+void
+mkdir_or_die(const char *path, mode_t mode)
+{
+  if (mkdir(path, mode) == -1 && errno != EEXIST)
+    die("mkdir()");
+}
+
+void *
+realloc_or_die(void *p, size_t size)
+{
+  void *res;
+  if (!(res = realloc(p, size)))
+    die("realloc()");
+  return res;
+}
+
+void
+snprintf_or_die(char *str, size_t size, const char *restrict format, ...)
+{
+  va_list ap;
+  va_start(ap, format);
+  if (vsnprintf(str, size, format, ap) < 0)
+    die("snprintf()");
+  va_end(ap);
 }
